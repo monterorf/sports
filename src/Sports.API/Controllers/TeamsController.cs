@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sports.Application.Features.Teams.Commands.CreateTeam;
+using Sports.Application.Features.Teams.Commands.UpdateTeam;
+using Sports.Application.Features.Teams.Commands.DeleteTeam;
 using Sports.Application.Features.Teams.Queries.GetAllTeams;
 using Sports.Application.Features.Teams.Queries.GetTeamById;
 
@@ -42,5 +44,31 @@ public class TeamsController : ControllerBase
     {
         var teamId = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = teamId }, teamId);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTeamCommand command, CancellationToken cancellationToken)
+    {
+        if (id != command.Id)
+            return BadRequest("Id mismatch");
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result)
+            return NotFound();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var command = new DeleteTeamCommand(id);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (!result)
+            return NotFound();
+
+        return NoContent();
     }
 }
