@@ -71,4 +71,23 @@ public class TeamsController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("proxy-image")]
+    public async Task<IActionResult> ProxyImage([FromQuery] string url)
+    {
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                var response = await client.GetAsync(url);
+                var content = await response.Content.ReadAsByteArrayAsync();
+                var contentType = response.Content.Headers.ContentType?.MediaType ?? "image/png";
+                return File(content, contentType);
+            }
+        }
+        catch
+        {
+            return NotFound();
+        }
+    }
 }
