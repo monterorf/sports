@@ -10,6 +10,12 @@
 *.userosscache
 *.sln.docstates
 
+# Ignore uploaded files created at runtime
+**/wwwroot/uploads/**
+# Keep a placeholder if you want the empty folder tracked (opcional)
+!**/wwwroot/uploads/.gitkeep
+
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

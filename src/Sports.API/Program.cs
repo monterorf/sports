@@ -43,6 +43,7 @@ if (app.Environment.IsDevelopment())
 
 // ⭐ USAR CORS ANTES DE OTROS MIDDLEWARES
 app.UseCors("AllowAngular");
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
