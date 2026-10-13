@@ -68,6 +68,16 @@
   - Guardar en carpeta específica
   - Validar tipos MIME
 
+### 8. Unit Tests (OBLIGATORIO)
+- [ ] Siempre crear o actualizar tests para cada nueva implementación o modificación de un feature.
+  - Proyecto de tests (usar existente): `Sports.API.Tests/Sports.API.Tests.csproj` (ruta relativa en la solución)
+  - Estructura de carpetas sugerida dentro del proyecto de tests: `UnitTests/Services`, `UnitTests/Repositories`, `IntegrationTests/`, etc.
+  - Frameworks recomendados: `xUnit`, `Moq`/`NSubstitute`, `FluentAssertions`
+  - Convenciones de nombrado: `[Entity]ServiceTests.cs`, `[Entities]ControllerTests.cs`
+  - Tests mínimos por CRUD: GetAll, GetById, Create, Update, Delete (happy path + validaciones + caminos de error)
+  - Para cambios existentes: actualizar tests que cubran el comportamiento modificado y añadir pruebas de regresión si aplica
+  - Añadir los tests a la solución y asegurar que `dotnet test` pase en CI
+
 ## Endpoints Requeridos por Frontend
 
 Cuando crees una entidad, **DEBE tener estos 5 endpoints**:
@@ -93,3 +103,5 @@ Cuando crees una entidad, **DEBE tener estos 5 endpoints**:
 - **Enums como strings**: enviar nombres literales ("Midfielder"), no números
 - **Borrado lógico**: UPDATE `IsActive = false`, no DELETE
 - **URLs relativas**: filePath debe ser relativa a la carpeta de upload
+- **Validación en backend**: siempre validar los datos recibidos antes de procesarlos
+- **Manejo de errores**: retornar mensajes claros y códigos HTTP adecuados (400, 404, 500, etc.)
