@@ -47,10 +47,13 @@ public class Team : BaseEntity
         IsActive = true;
     }
 
-    public void UpdateTeamInfo(string name, string shortName, string city, string country, string? logo = null, string? stadium = null)
+    public void UpdateTeamInfo(string name, string shortName,DateTime foundedDate, string city, string country, string? logo = null, string? stadium = null)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         ShortName = shortName ?? throw new ArgumentNullException(nameof(shortName));
+        if (foundedDate == default(DateTime))
+            throw new ArgumentNullException(nameof(foundedDate));
+        FoundedDate = foundedDate; 
         City = city ?? throw new ArgumentNullException(nameof(city));
         Country = country ?? throw new ArgumentNullException(nameof(country));
         Logo = logo;

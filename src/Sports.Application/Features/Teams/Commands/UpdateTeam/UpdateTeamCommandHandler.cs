@@ -22,6 +22,7 @@ public class UpdateTeamCommandHandler : IRequestHandler<UpdateTeamCommand, bool>
         team.UpdateTeamInfo(
             request.Name,
             request.ShortName,
+            request.FoundedDate,
             request.City,
             request.Country,
             request.Logo,

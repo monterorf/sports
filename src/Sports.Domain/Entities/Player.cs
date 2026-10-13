@@ -53,6 +53,7 @@ public class Player : BaseEntity
     public void UpdatePlayerInfo(
         string firstName,
         string lastName,
+        DateTime dateOfBirth,
         string nationality,
         int height,
         int weight,
@@ -62,6 +63,8 @@ public class Player : BaseEntity
     {
         FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
         LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        if (dateOfBirth == default(DateTime))
+            throw new ArgumentNullException(nameof(dateOfBirth));
         Nationality = nationality ?? throw new ArgumentNullException(nameof(nationality));
         Height = height > 0 ? height : throw new ArgumentException("Height must be greater than 0", nameof(height));
         Weight = weight > 0 ? weight : throw new ArgumentException("Weight must be greater than 0", nameof(weight));
