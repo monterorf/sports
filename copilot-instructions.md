@@ -2,7 +2,7 @@
 
 ## Stack & Estructura
 
-- **Framework**: .NET 8+ (C#)
+- **Framework**: .NET 10 (C#)
 - **ORM**: Entity Framework Core
 - **Patterns**:
   - Controllers en `Controllers/`
@@ -17,6 +17,88 @@
 2. **Validation**: Usar FluentValidation para requests
 3. **Error Handling**: GlobalExceptionHandler para respuestas consistentes
 4. **Borrado Lógico**: DELETE marca `isActive = false`, no elimina
+
+## Autenticación y Autorización
+
+### Roles Disponibles
+
+Aplicación soporta **5 roles escalables** con permisos jerárquicos:
+
+```csharp
+public static class UserRoles
+{
+    public const string Admin = nameof(Admin);                    // Control total
+    public const string LeagueManager = nameof(LeagueManager);    // Gestiona ligas
+    public const string TeamManager = nameof(TeamManager);        // Gestiona equipos
+    public const string Player = nameof(Player);                  // Jugador registrado
+    public const string Spectator = nameof(Spectator);            // Público/aficionado
+}
+```
+
+### Estructura de User Entity
+
+```csharp
+// Models/User.cs
+public class User
+{
+    public Guid Id { get; set; }
+    public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string PasswordHash { get; set; }
+
+    public List<string> Roles { get; set; } = new(); // Múltiples roles permitidos
+    public Guid? TeamId { get; set; }                 // Para Player o TeamManager
+    public Guid? LeagueId { get; set; }               // Para LeagueManager
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public bool IsActive { get; set; }
+}
+```
+
+### Patrones de Autorización en Controllers
+
+```csharp
+// Solo Admin
+[Authorize(Roles = UserRoles.Admin)]
+[HttpPost("leagues")]
+public async Task<IActionResult> CreateLeague(CreateLeagueRequest request) { }
+
+// Admin o LeagueManager
+[Authorize(Roles = $"{UserRoles.Admin},{UserRoles.LeagueManager}")]
+[HttpPost("leagues/{leagueId}/schedule")]
+public async Task<IActionResult> GenerateSchedule(Guid leagueId) { }
+
+// Admin o TeamManager (validar pertenencia a equipo)
+[Authorize(Roles = $"{UserRoles.Admin},{UserRoles.TeamManager}")]
+[HttpPut("matches/{matchId}")]
+public async Task<IActionResult> UpdateMatchDateTime(Guid matchId) { }
+
+// Público (sin [Authorize])
+[HttpGet("matches/{matchId}/result")]
+public async Task<IActionResult> GetMatchResult(Guid matchId) { }
+
+// Cualquier usuario autenticado
+[Authorize]
+[HttpGet("statistics")]
+public async Task<IActionResult> GetMyStatistics() { }
+```
+
+### Claims en JWT
+
+El token JWT incluye automáticamente:
+- `sub` - UserId
+- `email` - Email del usuario
+- `role` - Roles (múltiples claims si es necesario)
+- `TeamId` - Si aplica (custom claim)
+- `LeagueId` - Si aplica (custom claim)
+
+### Endpoints de Autenticación
+
+- ✅ `POST /api/auth/login` - Login y obtener token JWT
+- ✅ `POST /api/auth/register` - Registro (por defecto rol "Player")
+- ✅ `POST /api/auth/refresh` - Refresh token (si aplica)
 
 ## Checklist: Agregar Nuevo CRUD (Entity)
 
@@ -55,6 +137,7 @@
   - `[HttpPost]` Create
   - `[HttpPut("{id}")]` Update
   - `[HttpDelete("{id}")]` Delete (lógico)
+  - **Agregar autorización apropiada** (ver sección de Autenticación y Autorización)
 
 ### 6. Validación
 
@@ -69,6 +152,7 @@
   - Validar tipos MIME
 
 ### 8. Unit Tests (OBLIGATORIO)
+
 - [ ] Siempre crear o actualizar tests para cada nueva implementación o modificación de un feature.
   - Proyecto de tests (usar existente): `Sports.API.Tests/Sports.API.Tests.csproj` (ruta relativa en la solución)
   - Estructura de carpetas sugerida dentro del proyecto de tests: `UnitTests/Services`, `UnitTests/Repositories`, `IntegrationTests/`, etc.
@@ -96,6 +180,7 @@ Cuando crees una entidad, **DEBE tener estos 5 endpoints**:
 - ✅ Teams: todos los endpoints completos
 - ⚠️ Players: GetAll ✅, Create ✅, pero falta GetById, Update, Delete
 - ⚠️ Matches: TBD
+- ⚠️ Auth: Pendiente de implementación
 
 ## Notas Importantes
 
@@ -105,3 +190,7 @@ Cuando crees una entidad, **DEBE tener estos 5 endpoints**:
 - **URLs relativas**: filePath debe ser relativa a la carpeta de upload
 - **Validación en backend**: siempre validar los datos recibidos antes de procesarlos
 - **Manejo de errores**: retornar mensajes claros y códigos HTTP adecuados (400, 404, 500, etc.)
+- **Autorización**: Verificar permisos de usuario según rol y contexto (ej: TeamManager solo puede editar su equipo)
+- **Password**: Siempre hashear con algoritmo seguro (BCrypt o PBKDF2), nunca en texto plano
+- **Secretos**: JWT key en `appsettings.json` o variables de entorno, nunca hardcodeado
+- **Secretos**: JWT key en `appsettings.json` o variables de entorno, nunca hardcodeado
